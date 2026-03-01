@@ -1,108 +1,216 @@
-# AWS Organization Security Platform
+# AWS Organization Security Platform (Terraform-First)
 
-## Overview
+This repository simulates a production-grade AWS multi-account security architecture designed for enterprise and fintech environments.
 
-This repository simulates a production-grade AWS security governance model for a multi-account environment.  
+Focus: identity governance, blast-radius containment, control-plane protection, and detection resilience.
 
-The focus is not feature completeness, but risk reduction, blast-radius containment, and identity-first security controls suitable for enterprise and fintech environments.
+The design prioritizes:
 
-This project models how a security engineering team operates in production: guardrails first, workloads second.
-
----
-
-## Design Principles
-
-- Identity compromise is treated as the primary breach vector.
-- Organization-level controls must be non-bypassable.
-- Logging must be immutable and outside workload blast radius.
-- Automation is powerful but constrained.
-- Incidents must feed back into preventive controls.
+- Organizational guardrails over account-level controls
+- Federated human access (no IAM users)
+- Immutable centralized logging
+- Detection of privilege escalation and control-plane mutation
+- Explicit residual risk acknowledgment
 
 ---
 
-## Architecture Summary
+# 1. Architecture Overview
 
-### 1. Organization Governance
-- AWS Organizations with Security, Logging, and Workload OUs
-- SCP-based invariants at the root level
-- Guardrails enforced before workload deployment
+## Organizational Structure
 
-### 2. Identity & Access Management
+- Management Account (governance root, break-glass only)
+- Security Account (detection & delegated administration)
+- Log Archive Account (immutable logging)
+- Workload Accounts (application environments)
+
+Security controls are enforced at the organization level wherever possible.
+
+---
+
+# 2. Threat Model & Control Mapping
+
+## Threat: IAM Privilege Escalation
+
+Example:
+- Developer creates role
+- Attaches AdministratorAccess
+- Modifies trust policy for persistence
+
+### Controls
+
+- SCP denies:
+  - iam:CreateUser
+  - iam:AttachRolePolicy outside approved scope
+  - iam:CreateAccessKey
+- Permission boundaries restrict automation roles
+- IAM mutation events forwarded to Security account
+- Central EventBridge rule detects escalation primitives
+
+### Outcome
+
+- Full admin attachment blocked
+- Escalation attempt logged
+- Security alerted
+
+### Residual Risk
+
+- Abuse of existing read permissions
+- Data exfiltration within allowed scope
+
+---
+
+## Threat: Cross-Account Backdoor
+
+Example:
+- UpdateAssumeRolePolicy to allow external AWS account
+
+### Controls
+
+- SCP ceilings prevent unrestricted trust mutation
+- Access Analyzer (org mode) detects unintended external access
+- IAM mutation detection alerts Security account
+
+### Residual Risk
+
+- Exposure possible within policy boundaries if mis-scoped
+
+---
+
+## Threat: Logging Disablement
+
+Example:
+- Stop CloudTrail
+- Delete Trail
+- Disable GuardDuty
+
+### Controls
+
+- SCP denies StopLogging and DeleteTrail
+- GuardDuty enabled org-wide
+- Security Hub aggregates findings
+- EventBridge monitors DeleteRule and DisableRule
+
+### Residual Risk
+
+- Management account compromise can modify SCP
+
+---
+
+## Threat: Management Account Compromise
+
+Example:
+- SCP relaxed
+- Detection rules deleted
+- GuardDuty disabled
+
+### Controls
+
+- All control-plane actions logged via Org CloudTrail
+- Logs stored in separate Log Archive account
+- S3 Object Lock prevents tampering
+
+### Outcome
+
+- Real-time detection may be delayed
+- Forensic integrity preserved
+
+### Residual Risk
+
+- Data exfiltration during detection gap
+
+---
+
+# 3. Identity Governance Model
+
+- IAM Identity Center enabled
+- Delegated admin: Security account
 - No IAM users for human access
-- Role-based access model
-- Mandatory permission boundaries
-- Separation between human and automation roles
+- No standing admin permission set
+- Short session durations for privileged roles
+- SCP prevents privilege escalation beyond ceiling
 
-### 3. Preventive Controls
-- SCPs block:
-  - Organization escape
-  - CloudTrail tampering
-  - Root misuse
-  - Identity privilege escalation patterns
+Break-glass access:
 
-### 4. Centralized Logging
-- Organization-wide CloudTrail
-- Dedicated Log Archive account
-- Log file validation enabled
-- S3 versioning and immutability model
-- Workload accounts cannot delete audit logs
-
-### 5. Incident Response
-- Structured runbook for compromised identity
-- Containment-first methodology
-- Persistence hunting
-- Data-plane impact analysis
-- Control reinforcement loop
+- Hardware MFA required
+- No long-lived credentials
+- All usage logged and alerted
 
 ---
 
-## Threat Model Focus
+# 4. Detection Architecture
+
+Layered model:
+
+1. Org-level GuardDuty
+2. Security Hub aggregation
+3. Access Analyzer (organization mode)
+4. Central EventBridge bus in Security account
+5. Immutable Org CloudTrail logging
+
+Detection logic does not reside solely in workload accounts.
+
+---
+
+# 5. Logging & Evidence Integrity
+
+- Organization CloudTrail enabled
+- Logs delivered to Log Archive account
+- S3 Object Lock (compliance mode)
+- Versioning enabled
+- Log file validation active
+
+Even if detection infrastructure is modified, tampering remains permanently recorded.
+
+---
+
+# 6. Operational Governance
+
+SCP changes:
+
+- Separate Terraform module
+- Multi-approver review
+- Change window tagging
+- EventBridge monitoring for policy updates
+
+Terraform state:
+
+- Versioned
+- Encrypted
+- Locked via DynamoDB
+- Restricted to execution role
+
+Emergency override:
+
+- Break-glass only
+- Logged
+- Post-incident review mandatory
+
+---
+
+# 7. What This Architecture Does NOT Attempt
+
+- Eliminate all risk
+- Replace external SIEM
+- Automate every remediation
+- Simulate full Control Tower landing zone
+
+The focus is governance integrity, escalation containment, and detection resilience.
+
+---
+
+# 8. Design Philosophy
 
 This platform assumes:
 
-- Credentials will leak.
-- IAM misconfiguration will occur under delivery pressure.
-- Attackers will attempt privilege escalation and persistence.
-- Audit visibility must survive account compromise.
+- Credentials will be compromised
+- Developers will attempt misconfiguration under pressure
+- Control-plane actions are high-risk
+- Detection may fail temporarily
 
----
+The goal is to:
 
-## What Is Intentionally Out of Scope
-
-- Network topology deep-dive (VPC engineering)
-- Full SIEM implementation
-- Control Tower automation specifics
-- Third-party security tooling integration
-- Inspector / Macie deep tuning
-
-These can integrate on top of this governance foundation.
-
----
-
-## What this Project Achieves ?
-
-This project demonstrates capability in:
-
-- Architecting multi-account security frameworks
-- Designing SCP-first governance models
-- Implementing permission boundaries for delegated IAM
-- Modeling blast radius under compromise
-- Conducting structured incident response
-- Preserving audit integrity
-
----
-
-## Operating Philosophy
-
-Security defines the envelope.  
-Engineering operates freely within it.  
-Guardrails are enforced in code, not policy documents.
-
----
-
-## Author
-
-Execution-first AWS Security Engineer  
-Focused on identity governance, blast-radius control, and production trust.
-
-
+- Reduce blast radius
+- Preserve audit integrity
+- Centralize governance authority
+- Detect escalation primitives deterministically
+- Acknowledge residual risk explicitly
