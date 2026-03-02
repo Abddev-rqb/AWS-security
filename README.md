@@ -32,8 +32,6 @@ Workload accounts forward control-plane activity via **Organization CloudTrail**
 
 # 2. Threat Model & Control Mapping
 
----
-
 ## Threat: IAM Privilege Escalation
 
 Example:
