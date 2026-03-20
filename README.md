@@ -1,3 +1,19 @@
+# The architecture separates governance, detection, and workloads across accounts.
+
+SCPs enforce permission ceilings at the organization level.
+Identity Center controls human access.
+Detection runs centrally in the security account.
+Logging is isolated in a log archive account to preserve evidence integrity.
+
+## Architecture Overview
+
+![Org Security Architecture](images/aws_org_drawio.png)
+
+![Detection Architecture](images/aws_workloads_arct_drawio.png)
+
+![Logging Architecture](images/aws_logging_drawio.png)
+
+
 # AWS Organization Security Platform (Terraform-First)
 
 This repository models a production-oriented AWS multi-account security architecture designed for enterprise and fintech environments.
