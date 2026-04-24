@@ -1,6 +1,6 @@
-# 🏢 AWS Multi-Account Security Platform (Terraform)
+# AWS Multi-Account Security Platform (Terraform)
 
-## 📌 Overview
+## Overview
 
 This project implements a production-oriented AWS multi-account architecture focused on **governance, detection resilience, and blast-radius containment**.
 
@@ -8,7 +8,7 @@ It models a real-world enterprise setup where compromise is assumed, and the sys
 
 ---
 
-## 🎯 What This Project Demonstrates
+## What This Project Demonstrates
 
 - Organization-level governance using SCPs (not just IAM)
 - Centralized detection and monitoring across accounts
@@ -18,7 +18,7 @@ It models a real-world enterprise setup where compromise is assumed, and the sys
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 The architecture separates responsibilities across accounts:
 
@@ -31,7 +31,7 @@ The architecture separates responsibilities across accounts:
 
 ---
 
-### 🔄 Control Flow
+### Control Flow
 
 
 ## Architecture Overview
@@ -40,7 +40,7 @@ The architecture separates responsibilities across accounts:
 
 ---
 
-## 🧠 Key Strengths
+## Key Strengths
 
 ### 1. Governance First (SCP-Centric Design)
 - SCPs enforce **non-bypassable permission ceilings**
@@ -75,13 +75,13 @@ The architecture separates responsibilities across accounts:
 
 ---
 
-## ⚠️ Threat Modeling & Controls
+## Threat Modeling & Controls
 
 This architecture explicitly maps threats to controls instead of assuming security.
 
 ---
 
-### 🔴 Threat: IAM Privilege Escalation
+### Threat: IAM Privilege Escalation
 
 **Example:** Attach `AdministratorAccess` to a role
 
@@ -96,7 +96,7 @@ This architecture explicitly maps threats to controls instead of assuming securi
 
 ---
 
-### 🔴 Threat: Logging Disablement
+### Threat: Logging Disablement
 
 **Example:** `StopLogging`, delete CloudTrail
 
@@ -110,7 +110,7 @@ This architecture explicitly maps threats to controls instead of assuming securi
 
 ---
 
-### 🔴 Threat: Management Account Compromise
+### Threat: Management Account Compromise
 
 **Reality:** Full control possible
 
@@ -124,7 +124,7 @@ This architecture explicitly maps threats to controls instead of assuming securi
 
 ---
 
-## 🔐 Identity Governance Model
+## Identity Governance Model
 
 - IAM Identity Center enabled
 - No standing admin roles
@@ -140,7 +140,7 @@ This architecture explicitly maps threats to controls instead of assuming securi
 
 ---
 
-## 🔍 Detection Architecture
+## Detection Architecture
 
 Layered approach:
 
@@ -154,7 +154,7 @@ Detection logic is **centralized and isolated from workloads**
 
 ---
 
-## 📦 Terraform Design
+## Terraform Design
 
 - Fully modular structure:
   - global
@@ -174,20 +174,20 @@ Detection logic is **centralized and isolated from workloads**
 
 ---
 
-## ⚠️ Known Limitations (Honest Trade-offs)
+## Known Limitations (Honest Trade-offs)
 
 This is not a full enterprise landing zone:
 
-- ❌ No AWS Control Tower
-- ❌ No external SIEM integration
-- ❌ No automated remediation (limited SOAR)
-- ❌ No cost governance (Budgets / anomaly detection)
-- ❌ No full CI/CD pipeline for Terraform
-- ❌ Management account remains ultimate trust anchor
+- No AWS Control Tower
+- No external SIEM integration
+- No automated remediation (limited SOAR)
+- No cost governance (Budgets / anomaly detection)
+- No full CI/CD pipeline for Terraform
+- Management account remains ultimate trust anchor
 
 ---
 
-## 🧠 Design Philosophy
+## Design Philosophy
 
 This system assumes:
 
@@ -205,7 +205,7 @@ Therefore, it prioritizes:
 
 ---
 
-## 🚀 Outcome
+## Outcome
 
 - Built a governance-first multi-account architecture
 - Enforced non-bypassable security controls via SCPs
@@ -215,7 +215,7 @@ Therefore, it prioritizes:
 
 ---
 
-## 🔮 Future Improvements
+## Future Improvements
 
 - Integrate AWS Control Tower
 - Add external SIEM (Splunk / OpenSearch)
