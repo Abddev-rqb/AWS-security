@@ -1,4 +1,4 @@
-# AWS Multi-Account Security Platform (Terraform)
+﻿# AWS Multi-Account Security Platform (Terraform)
 
 ## Overview
 
@@ -36,7 +36,7 @@ The architecture separates responsibilities across accounts:
 
 ## Architecture Overview
 
-![Org Security Architecture](images/aws_org_drawio.png)
+![Org Security Architecture](images/aws_org_draw_io.png)
 
 ---
 
